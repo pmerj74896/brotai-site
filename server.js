@@ -1,23 +1,13 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
-const session = require('express-session');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 
+// ================= CONFIG =================
+app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// ================= SESSÃO =================
-app.use(session({
-  secret: "brota-admin-2026",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    sameSite: true
-  }
-}));
 
 const db = new sqlite3.Database('./banco.db');
 
@@ -45,31 +35,14 @@ app.post('/login', (req, res) => {
   const { senha } = req.body;
 
   if (senha === SENHA_ADMIN) {
-    req.session.admin = true;
     return res.json({ ok: true });
   }
 
   res.status(401).json({ ok: false });
 });
 
-// ================= LOGOUT =================
-app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.json({ ok: true });
-  });
-});
-
-// ================= PROTEÇÃO =================
-function auth(req, res, next) {
-  if (req.session && req.session.admin === true) {
-    return next();
-  }
-
-  return res.status(403).json({ erro: "Acesso negado" });
-}
-
-// ================= DADOS PROTEGIDOS =================
-app.get('/dados', auth, (req, res) => {
+// ================= DADOS =================
+app.get('/dados', (req, res) => {
   db.all("SELECT * FROM inscritos ORDER BY id DESC", [], (err, rows) => {
     if (err) return res.status(500).send(err);
     res.json(rows);
@@ -102,12 +75,20 @@ app.post('/inscrever', (req, res) => {
     d.bairro || "",
     d.atividade || "",
     d.origem || ""
-  ]);
+  ],
+  (err) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send("Erro");
+    }
+    res.send("OK");
+  });
 
-  res.send("OK");
 });
 
 // ================= SERVER =================
-app.listen(3000, () => {
-  console.log("Servidor rodando http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Servidor rodando na porta " + PORT);
 });
