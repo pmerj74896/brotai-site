@@ -46,7 +46,8 @@
     ⬅ Voltar
   </a>
 
-  <a href="/login.html" style="font-size:14px;">
+  <!-- ⚠️ ajuste importante aqui -->
+  <a href="login.html" style="font-size:14px;">
     🔐 Acesso Administrativo
   </a>
 
@@ -200,15 +201,20 @@ async function enviar(){
     origem: origem.value
   };
 
-  const res = await fetch('/inscrever',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(dados)
-  });
+  try {
+    const res = await fetch('https://brotai-site.onrender.com/inscrever',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(dados)
+    });
 
-  msg.innerText = res.ok
-    ? "Inscrição enviada com sucesso!"
-    : "Erro ao enviar inscrição";
+    msg.innerText = res.ok
+      ? "Inscrição enviada com sucesso!"
+      : "Erro ao enviar inscrição";
+
+  } catch (e) {
+    msg.innerText = "Erro de conexão com o servidor";
+  }
 
 }
 
