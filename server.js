@@ -1,6 +1,5 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const Database = require('better-sqlite3');
 const cors = require('cors');
 
 const app = express();
@@ -9,12 +8,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const db = new sqlite3.Database('./banco.db');
+// ================= BANCO =================
+const db = new Database('banco.db');
 
 const SENHA_ADMIN = "1234";
 
-// ================= BANCO =================
-db.run(`
+// cria tabela se não existir
+db.prepare(`
 CREATE TABLE IF NOT EXISTS inscritos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   nome TEXT,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS inscritos (
   atividade TEXT,
   origem TEXT
 )
-`);
+`).run();
 
 // ================= LOGIN =================
 app.post('/login', (req, res) => {
@@ -43,10 +43,13 @@ app.post('/login', (req, res) => {
 
 // ================= DADOS =================
 app.get('/dados', (req, res) => {
-  db.all("SELECT * FROM inscritos ORDER BY id DESC", [], (err, rows) => {
-    if (err) return res.status(500).send(err);
+  try {
+    const rows = db.prepare("SELECT * FROM inscritos ORDER BY id DESC").all();
     res.json(rows);
-  });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erro ao buscar dados");
+  }
 });
 
 // ================= INSCRIÇÃO =================
@@ -54,35 +57,37 @@ app.post('/inscrever', (req, res) => {
 
   const d = req.body;
 
-  db.run(`
-    INSERT INTO inscritos (
-      nome, email,
-      genero, raca,
-      pcd, pcd_desc,
-      regiao, bairro,
-      atividade,
-      origem
-    ) VALUES (?,?,?,?,?,?,?,?,?,?)
-  `,
-  [
-    d.nome || "",
-    d.email || "",
-    d.genero || "",
-    d.raca || "",
-    d.pcd || "",
-    d.pcd_desc || "",
-    d.regiao || "",
-    d.bairro || "",
-    d.atividade || "",
-    d.origem || ""
-  ],
-  (err) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).send("Erro");
-    }
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO inscritos (
+        nome, email,
+        genero, raca,
+        pcd, pcd_desc,
+        regiao, bairro,
+        atividade,
+        origem
+      ) VALUES (?,?,?,?,?,?,?,?,?,?)
+    `);
+
+    stmt.run(
+      d.nome || "",
+      d.email || "",
+      d.genero || "",
+      d.raca || "",
+      d.pcd || "",
+      d.pcd_desc || "",
+      d.regiao || "",
+      d.bairro || "",
+      d.atividade || "",
+      d.origem || ""
+    );
+
     res.send("OK");
-  });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erro ao salvar");
+  }
 
 });
 
