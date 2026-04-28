@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Inscrição Brotaí</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    padding: 20px;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+
+  input, select {
+    width: 250px;
+    padding: 6px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+  }
+
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+</style>
+
+</head>
+
+<body>
+
+<!-- 🔐 ACESSO ADMIN + VOLTAR -->
+<div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+
+  <a href="index.html" style="text-decoration:none; font-weight:bold;">
+    ⬅ Voltar
+  </a>
+
+  <a href="/login.html" style="font-size:14px;">
+    🔐 Acesso Administrativo
+  </a>
+
+</div>
+
+<h2>Formulário de Inscrição - Brotaí</h2>
+
+<label>Nome</label>
+<input id="nome">
+
+<label>Email</label>
+<input id="email">
+
+<label>Gênero</label>
+<select id="genero">
+  <option value="">Selecione</option>
+  <option>Mulher Cis</option>
+  <option>Mulher Trans</option>
+  <option>Homem Cis</option>
+  <option>Homem Trans</option>
+  <option>Prefiro não responder</option>
+</select>
+
+<label>Raça</label>
+<select id="raca">
+  <option value="">Selecione</option>
+  <option>Preta</option>
+  <option>Parda</option>
+  <option>Branca</option>
+  <option>Amarela</option>
+  <option>Indígena</option>
+  <option>Prefiro não responder</option>
+</select>
+
+<label>PCD</label>
+<select id="pcd" onchange="togglePCD()">
+  <option value="">Selecione</option>
+  <option>Sim</option>
+  <option>Não</option>
+</select>
+
+<div id="pcdBox" style="display:none;">
+  <label>Descreva a deficiência</label>
+  <input id="pcd_desc">
+</div>
+
+<label>Região</label>
+<select id="regiao">
+  <option value="">Selecione a região</option>
+  <option value="baia">Praias da Baía</option>
+  <option value="norte">Região Norte</option>
+  <option value="oceania">Região Oceânica</option>
+  <option value="pendotiba">Pendotiba</option>
+  <option value="leste">Leste</option>
+  <option value="outros">Outros</option>
+</select>
+
+<label>Bairro</label>
+<select id="bairro">
+  <option value="">Selecione a região primeiro</option>
+</select>
+
+<label>Atividade Cultural</label>
+<select id="atividade">
+  <option value="">Selecione o bairro primeiro</option>
+</select>
+
+<label>Origem</label>
+<select id="origem">
+  <option value="">Selecione</option>
+  <option>Redes sociais</option>
+  <option>Indicação</option>
+  <option>Anúncios</option>
+  <option>Outros</option>
+</select>
+
+<button onclick="enviar()">Enviar inscrição</button>
+
+<p id="msg"></p>
+
+<script>
+
+function togglePCD(){
+  const p = document.getElementById("pcd").value;
+  document.getElementById("pcdBox").style.display = (p === "Sim") ? "block" : "none";
+}
+
+const bairrosPorRegiao = {
+  baia: ["Barreto","Centro","Icaraí"],
+  norte: ["Fonseca"],
+  oceania: ["Piratininga"],
+  pendotiba: ["Maria Paula"],
+  leste: ["Rio do Ouro"],
+  outros: ["Resido em outro município"]
+};
+
+const atividadesPorBairro = {
+  "Barreto": ["Zumba – Qua e Sex"],
+  "Centro": ["Dança de Salão"],
+  "Fonseca": ["Dança Mix"],
+  "Icaraí": ["Charme"],
+  "Maria Paula": ["Zumba"],
+  "Piratininga": ["Yoga"]
+};
+
+document.getElementById("regiao").addEventListener("change", function () {
+
+  const r = this.value;
+  const b = document.getElementById("bairro");
+
+  b.innerHTML = '<option value="">Selecione o bairro</option>';
+  document.getElementById("atividade").innerHTML = '<option value="">Selecione o bairro primeiro</option>';
+
+  if (bairrosPorRegiao[r]) {
+    bairrosPorRegiao[r].forEach(x => {
+      b.innerHTML += `<option value="${x}">${x}</option>`;
+    });
+  }
+
+});
+
+document.getElementById("bairro").addEventListener("change", function () {
+
+  const b = this.value;
+  const a = document.getElementById("atividade");
+
+  a.innerHTML = '<option value="">Selecione</option>';
+
+  if (atividadesPorBairro[b]) {
+    atividadesPorBairro[b].forEach(x => {
+      a.innerHTML += `<option value="${x}">${x}</option>`;
+    });
+  } else {
+    a.innerHTML = '<option value="">Nenhuma atividade disponível</option>';
+  }
+
+});
+
+async function enviar(){
+
+  const dados = {
+    nome: nome.value,
+    email: email.value,
+    genero: genero.value,
+    raca: raca.value,
+    pcd: pcd.value,
+    pcd_desc: pcd_desc.value,
+    regiao: regiao.value,
+    bairro: bairro.value,
+    atividade: atividade.value,
+    origem: origem.value
+  };
+
+  const res = await fetch('/inscrever',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(dados)
+  });
+
+  msg.innerText = res.ok
+    ? "Inscrição enviada com sucesso!"
+    : "Erro ao enviar inscrição";
+
+}
+
+</script>
+
+</body>
+</html>
