@@ -36,15 +36,23 @@
 
 <script>
 
+const API = "https://brotai-site.onrender.com";
+
+// ================= LOGIN =================
 async function login(){
 
-  const res = await fetch('/login', {
+  const res = await fetch(API + '/login', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ senha: senha.value })
   });
 
-  if(res.ok){
+  const data = await res.json();
+
+  if(data.ok){
+
+    // 🔐 salva token
+    localStorage.setItem('token', data.token);
 
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("painel").style.display = "block";
@@ -57,13 +65,21 @@ async function login(){
 
 }
 
+// ================= CARREGAR DADOS =================
 async function carregar(){
 
-  const res = await fetch('/dados');
+  const token = localStorage.getItem('token');
+
+  const res = await fetch(API + '/dados', {
+    headers: {
+      'Authorization': token
+    }
+  });
 
   if(res.status === 403){
     alert("Sessão expirada ou não logado");
-    window.location.href = "/login.html";
+    localStorage.removeItem('token');
+    location.reload();
     return;
   }
 
@@ -88,13 +104,22 @@ async function carregar(){
 
 }
 
-async function logout(){
+// ================= LOGOUT =================
+function logout(){
+  localStorage.removeItem('token');
+  alert("Você saiu");
+  location.reload();
+}
 
-  await fetch('/logout');
+// ================= AUTO LOGIN =================
+window.onload = () => {
+  const token = localStorage.getItem('token');
 
-  alert("Você saiu do sistema");
-
-  window.location.href = "/login.html";
+  if(token){
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("painel").style.display = "block";
+    carregar();
+  }
 }
 
 </script>

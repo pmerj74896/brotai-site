@@ -1,6 +1,7 @@
 const express = require('express');
 const Database = require('better-sqlite3');
 const cors = require('cors');
+const crypto = require('crypto');
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 const db = new Database('banco.db');
 
 const SENHA_ADMIN = "1234";
+let TOKEN_ADMIN = null;
 
 // cria tabela se não existir
 db.prepare(`
@@ -35,14 +37,26 @@ app.post('/login', (req, res) => {
   const { senha } = req.body;
 
   if (senha === SENHA_ADMIN) {
-    return res.json({ ok: true });
+    TOKEN_ADMIN = crypto.randomBytes(16).toString('hex');
+    return res.json({ ok: true, token: TOKEN_ADMIN });
   }
 
   res.status(401).json({ ok: false });
 });
 
-// ================= DADOS =================
-app.get('/dados', (req, res) => {
+// ================= PROTEÇÃO =================
+function auth(req, res, next) {
+  const token = req.headers.authorization;
+
+  if (token && token === TOKEN_ADMIN) {
+    return next();
+  }
+
+  return res.status(403).json({ erro: "Acesso negado" });
+}
+
+// ================= DADOS PROTEGIDOS =================
+app.get('/dados', auth, (req, res) => {
   try {
     const rows = db.prepare("SELECT * FROM inscritos ORDER BY id DESC").all();
     res.json(rows);
@@ -58,6 +72,15 @@ app.post('/inscrever', (req, res) => {
   const d = req.body;
 
   try {
+    // 🚫 BLOQUEAR EMAIL DUPLICADO
+    const existe = db.prepare(
+      "SELECT * FROM inscritos WHERE email = ?"
+    ).get(d.email);
+
+    if (existe) {
+      return res.status(400).send("Email já cadastrado");
+    }
+
     const stmt = db.prepare(`
       INSERT INTO inscritos (
         nome, email,
