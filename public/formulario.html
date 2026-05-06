@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Inscrição Brotaí</title>
+
+<!-- CSS EXTERNO -->
+<link rel="stylesheet" href="css/style.css">
+
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+</head>
+
+<body>
+
+<div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+  <a href="index.html?v=2">⬅ Voltar</a>
+  <a href="login.html?v=2">🔐 Acesso Administrativo</a>
+</div>
+
+<h2>Formulário de Inscrição - Brotaí</h2>
+
+<form id="formulario" autocomplete="off">
+
+<label>Nome</label>
+<input id="nome" required>
+
+<label>Email</label>
+<input id="email" required>
+
+<label>Gênero</label>
+<select id="genero">
+  <option value="">Selecione</option>
+  <option>Mulher Cis</option>
+  <option>Mulher Trans</option>
+  <option>Homem Cis</option>
+  <option>Homem Trans</option>
+</select>
+
+<label>Raça</label>
+<select id="raca">
+  <option value="">Selecione</option>
+  <option>Preta</option>
+  <option>Parda</option>
+  <option>Branca</option>
+</select>
+
+<label>PCD</label>
+<select id="pcd" onchange="togglePCD()">
+  <option value="">Selecione</option>
+  <option>Sim</option>
+  <option>Não</option>
+</select>
+
+<div id="pcdBox" style="display:none;">
+  <label>Descreva a deficiência</label>
+  <input id="pcd_desc">
+</div>
+
+<label>Região</label>
+<select id="regiao">
+  <option value="">Selecione</option>
+  <option value="baia">Baía</option>
+</select>
+
+<label>Bairro</label>
+<select id="bairro">
+  <option value="">Selecione a região primeiro</option>
+</select>
+
+<label>Atividade</label>
+<select id="atividade">
+  <option value="">Selecione</option>
+</select>
+
+<label>Origem</label>
+<select id="origem">
+  <option value="">Selecione</option>
+  <option>Redes sociais</option>
+</select>
+
+<button type="submit">Enviar inscrição</button>
+
+</form>
+
+<p id="msg"></p>
+
+<!-- JS EXTERNO (IMPORTANTE: NO FINAL) -->
+<script src="js/form.js"></script>
+
+</body>
+</html>
